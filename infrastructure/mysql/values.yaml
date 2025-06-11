@@ -1,0 +1,10 @@
+auth:
+  rootPassword: rootpass
+  database: sampledb
+  username: user
+  password: password
+primary:
+  persistence:
+    enabled: true
+    size: 1Gi
+

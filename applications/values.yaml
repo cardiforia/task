@@ -1,0 +1,14 @@
+frontend:
+  image: nginx:latest
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 80
+
+backend:
+  image: golang:1.20
+  replicas: 1
+  service:
+    type: ClusterIP
+    port: 8080
+
