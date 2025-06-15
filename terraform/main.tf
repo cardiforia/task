@@ -3,28 +3,30 @@ terraform {
   required_providers {
     helm = {
       source  = "hashicorp/helm"
-      version = "2.12.1" # Use a compatible version
+      version = "2.12.1"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.23.0" # Use a compatible version
+      version = "2.23.0"
+    }
+    time = {
+      source  = "hashicorp/time"
+      version = "0.9.1"
     }
   }
 }
 
 # Configure the Kubernetes provider to connect to your local k3d cluster
-# Assumes kubectl context is already set to k3d-my-gitops-cluster
 provider "kubernetes" {
-  # You might need to explicitly configure host, client_certificate, etc.
-  # if kubectl context is not automatically picked up or if you use a different setup.
-  # For k3d, it generally works by default if your KUBECONFIG is set.
+  config_path = "~/.kube/config"
+  # context     = "k3d-devops-cluster" # Removed, as it worked without it!
 }
 
 # Configure the Helm provider
 provider "helm" {
   kubernetes {
-    config_path = "~/.kube/config" # Adjust if your kubeconfig is elsewhere
-    # For k3d, it often uses the default context, which is picked up from here.
+    config_path = "~/.kube/config"
+    # context     = "k3d-devops-cluster" # Removed, as it worked without it!
   }
 }
 
@@ -35,17 +37,19 @@ resource "helm_release" "argocd" {
   chart      = "argo-cd"
   namespace  = "argocd"
   create_namespace = true
+}
 
-  # Optional: Customize Argo CD values if needed
-  # values = [file("${path.module}/argocd-values.yaml")]
+# ADDED: Introduce a delay to allow Argo CD CRDs to become available after helm_release
+resource "time_sleep" "wait_for_argocd_crds" {
+  depends_on = [helm_release.argocd]
+  create_duration = "30s"
 }
 
 # Define the Argo CD Application for infrastructure components
 resource "kubernetes_manifest" "argocd_app_infrastructure" {
-  # Ensure Argo CD is deployed before attempting to create its applications
-  depends_on = [helm_release.argocd]
+  depends_on = [time_sleep.wait_for_argocd_crds] # Now depends on the time_sleep resource
 
-  yaml_body = <<-EOT
+  manifest = yamldecode(<<-EOT
     apiVersion: argoproj.io/v1alpha1
     kind: Application
     metadata:
@@ -59,7 +63,7 @@ resource "kubernetes_manifest" "argocd_app_infrastructure" {
         path: infrastructure
       destination:
         server: https://kubernetes.default.svc
-        namespace: default # Deploy infrastructure components to the 'default' namespace
+        namespace: default
       syncPolicy:
         automated:
           prune: true
@@ -67,14 +71,14 @@ resource "kubernetes_manifest" "argocd_app_infrastructure" {
         syncOptions:
           - CreateNamespace=true
   EOT
+  )
 }
 
 # Define the Argo CD Application for your custom frontend/backend applications
 resource "kubernetes_manifest" "argocd_app_applications" {
-  # Ensure Argo CD is deployed before attempting to create its applications
-  depends_on = [helm_release.argocd]
+  depends_on = [time_sleep.wait_for_argocd_crds] # Now depends on the time_sleep resource
 
-  yaml_body = <<-EOT
+  manifest = yamldecode(<<-EOT
     apiVersion: argoproj.io/v1alpha1
     kind: Application
     metadata:
@@ -88,16 +92,16 @@ resource "kubernetes_manifest" "argocd_app_applications" {
         path: applications/my-app
         helm:
           valueFiles:
-            - values.yaml # This tells Argo CD to use values.yaml from within the Helm chart path
+            - values.yaml
       destination:
         server: https://kubernetes.default.svc
-        namespace: default # Deploy applications to the 'default' namespace
+        namespace: default
       syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - CreateNamespace=true
+          automated:
+            prune: true
+            selfHeal: true
+          syncOptions:
+            - CreateNamespace=true
   EOT
+  )
 }
-
