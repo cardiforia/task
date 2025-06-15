@@ -22,4 +22,3 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "sample-app.fullname" . }}-config
-

@@ -7,4 +7,3 @@ primary:
   persistence:
     enabled: true
     size: 1Gi
-

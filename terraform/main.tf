@@ -13,4 +13,3 @@ resource "kubernetes_manifest" "infrastructure_app" {
 resource "kubernetes_manifest" "applications_app" {
   manifest = yamldecode(file("${path.module}/applications-app.yaml"))
 }
-

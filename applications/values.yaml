@@ -1,3 +1,6 @@
+# Global app configuration
+nameOverride: sample-app
+
 frontend:
   image: nginx:latest
   replicas: 1
@@ -6,9 +9,8 @@ frontend:
     port: 80
 
 backend:
-  image: golang:1.20
+  image: ghcr.io/sample-user/sample-backend:latest  # Replace with real backend image
   replicas: 1
   service:
     type: ClusterIP
     port: 8080
-

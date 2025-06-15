@@ -11,4 +11,3 @@ spec:
   ports:
     - port: {{ .Values.backend.service.port }}
       targetPort: {{ .Values.backend.service.port }}
-
