@@ -1,19 +1,19 @@
-# This file will override values for the Bitnami MySQL Helm Chart
-# You would typically install this chart using:
-# helm repo add bitnami https://charts.bitnami.com/bitnami
-# helm install my-mysql bitnami/mysql -f values.yaml
-
-auth:
-  # IMPORTANT: For a production environment, generate strong, random passwords.
-  # For this task, we'll use simple ones for demonstration.
-  rootPassword: "mysecretpassword" # This will be stored in a Kubernetes Secret
-  username: "myapp_user"
-  password: "myapp_password" # This will be stored in a Kubernetes Secret
-  database: "myapp_db"
-
-primary:
-  persistence:
+mysql:
+  auth:
+    rootPassword: "password"
+    database: "textdb"
+    username: "appuser"
+    password: "apppassword"
+  primary:
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+    persistence:
+      storageClass: "standard"
+      enabled: true
+      size: 8Gi
+  image:
+    tag: 8.0
+  metrics:
     enabled: true
-    size: 5Gi # Adjust as needed for your data volume
-    storageClass: standard # Or your cluster's default StorageClass
-

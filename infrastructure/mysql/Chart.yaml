@@ -1,0 +1,9 @@
+apiVersion: v2
+name: mysql
+description: MySQL database for text storage app
+version: 0.1.0
+appVersion: "8.0"
+dependencies:
+- name: mysql
+  version: 9.14.0
+  repository: https://charts.bitnami.com/bitnami
