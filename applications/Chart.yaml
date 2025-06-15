@@ -1,4 +1,0 @@
-apiVersion: v2
-name: sample-app
-description: A Helm chart for frontend/backend deployment
-version: 0.1.0

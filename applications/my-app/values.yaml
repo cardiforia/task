@@ -1,0 +1,46 @@
+frontend:
+  image:
+    repository: nginx
+    tag: 1.25.3-alpine
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 80
+  config:
+    backendApiUrl: "http://my-app-backend:8080" # Default, assuming backend service name and port
+
+backend:
+  image:
+    # You can replace this with your actual backend image (e.g., a simple Go server, Node.js, Python app)
+    # For demonstration, we'll use a placeholder or a simple echo server
+    repository: hashicorp/http-echo
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8080
+  env:
+    # Example for a simple http-echo backend
+    # For a real app, these would be database connection strings, etc.
+    - name: "HTTP_PORT"
+      value: "8080"
+    - name: "MESSAGE"
+      value: "Hello from the backend!"
+    # Example for database connection (you'd need to configure your backend app to use these)
+    # - name: DB_HOST
+    #   value: "mysql-service" # Name of the MySQL service deployed by infrastructure app
+    # - name: DB_USER
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: my-mysql-secret # This secret is created by the Bitnami MySQL chart
+    #       key: mysql-user # Key for your application user, from Bitnami chart's values
+    # - name: DB_PASSWORD
+    #   valueFrom:
+    #     secretKeyRef:
+    #       name: my-mysql-secret
+    #       key: mysql-password # Key for your application user password
+    # - name: DB_NAME
+    #   value: "myapp_db" # The database name from Bitnami MySQL chart's values
+

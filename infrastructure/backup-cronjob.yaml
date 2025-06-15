@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mysql-backup-job
+  namespace: default # Ensure this matches your MySQL deployment namespace
+spec:
+  schedule: "*/5 * * * *" # Runs every 5 minutes for demonstration
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: mysql-backup
+              # Use a mysql client image. mysql:8.0 includes mysql-client.
+              image: mysql:8.0
+              imagePullPolicy: IfNotPresent
+              command: ["/bin/bash", "-c"]
+              args:
+                - |
+                  TIMESTAMP=$(date +%F-%H-%M-%S)
+                  echo "Starting MySQL backup at $TIMESTAMP"
+                  mysqldump -h mysql-service \
+                    -u ${MYSQL_USER} \
+                    -p${MYSQL_PASSWORD} \
+                    ${MYSQL_DATABASE} > /backups/mysql-backup-${TIMESTAMP}.sql
+                  if [ $? -eq 0 ]; then
+                    echo "Backup successful: /backups/mysql-backup-${TIMESTAMP}.sql"
+                  else
+                    echo "Backup failed!"
+                    exit 1
+                  fi
+              env:
+                # These environment variables retrieve values from the Secret created by the Bitnami MySQL chart
+                - name: MYSQL_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: my-mysql-secret # Name of the secret created by Bitnami MySQL
+                      key: mysql-user
+                - name: MYSQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: my-mysql-secret
+                      key: mysql-password
+                - name: MYSQL_DATABASE
+                  value: myapp_db # The database name you configured in mysql/values.yaml
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: mysql-backup-pvc # Link to the PVC defined above
+

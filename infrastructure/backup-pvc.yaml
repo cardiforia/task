@@ -1,10 +1,13 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: backup-pvc
+  name: mysql-backup-pvc
+  namespace: default # Ensure this matches your deployment namespace
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce # Can be mounted as read-write by a single node
   resources:
     requests:
-      storage: 1Gi
+      storage: 1Gi # Allocate 1GB for backups
+  storageClassName: standard # Use your cluster's default StorageClass or define one
+
