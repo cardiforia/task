@@ -58,7 +58,7 @@ resource "kubernetes_manifest" "argocd_app_infrastructure" {
     spec:
       project: default
       source:
-        repoURL: git@github.com:cardiforia/task.git # Your Git repository URL
+        repoURL: https://github.com:cardiforia/task.git # Your Git repository URL
         targetRevision: HEAD
         path: infrastructure
       destination:
@@ -87,7 +87,7 @@ resource "kubernetes_manifest" "argocd_app_applications" {
     spec:
       project: default
       source:
-        repoURL: git@github.com:cardiforia/task.git # Your Git repository URL
+        repoURL: https://github.com:cardiforia/task.git # Your Git repository URL
         targetRevision: HEAD
         path: applications/my-app
         helm:
