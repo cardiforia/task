@@ -1,4 +1,3 @@
-# Global app configuration
 nameOverride: sample-app
 
 frontend:
@@ -9,7 +8,7 @@ frontend:
     port: 80
 
 backend:
-  image: ghcr.io/sample-user/sample-backend:latest  # Replace with real backend image
+  image: ghcr.io/sample-user/sample-backend:latest
   replicas: 1
   service:
     type: ClusterIP
